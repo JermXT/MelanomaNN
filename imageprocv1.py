@@ -1,3 +1,4 @@
+import random
 import numpy as np
 import cv2, sys, math, codecs, time
 #from matplotlib import pyplot as plt
@@ -45,10 +46,69 @@ for y in range(len(img)):
 		b+=img[y][x][0]
 		g+=img[y][x][1]
 		r+=img[y][x][2]
+pix = len(img)*len(img[0])
 r = r/(len(img)*len(img[0]))*0.8
 g = g/(len(img)*len(img[0]))*0.8
 b = b/(len(img)*len(img[0]))*0.8
+print(r,g,b)
+size = 10
+if(pix < 240 * 240/9*16):
+	size = 4
+elif(pix < 480 * 480/9*16):
+	size = 6
+elif(pix < 720 * 720/9*16):
+	size = 8
+size = 10
 
+imgbw = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+maxcoordx = 0
+currentx = 255
+currenty = 255
+maxcoordy =0
+for y in range(len(img)):
+	average = 0;
+	for x in range(len(img[0])):
+		average += imgbw[y][x]
+		#print average
+		average=float(average)/float(len(img[0]))
+		#print average
+		if average < currenty:
+			currenty = average
+			maxcoordy = y
+
+for x in range(len(img[0])):
+        average = 0;
+        for y in range(len(img)):
+                average += imgbw[y][x]
+        average=float(average)/float(len(img[0]))
+        if average < currentx:
+                currentx = average
+		maxcoordx = x
+print(maxcoordx,maxcoordy)
+
+
+
+#below finds center spot
+satisfied = False
+#for x in range(10):
+#	print(random.randrange(len(img[0])/4,len(img[0])*3/4,1),random.randrange(len(img)/4,len(img)*3/4,1))
+def findspot(satisfied):
+	if(satisfied == False):
+		cont = True
+		#x = random.randrange(len(img[0])/4,len(img[0])*3/4,1)
+		#y = random.randrange(len(img)/4,len(img)*3/4,1)
+		x = 700
+		y=440
+		print(x,y)
+		for yc in range(y, y+size):
+			for xc in range(x, x+size):
+				if(img[yc][xc][0] > b or img[yc][xc][1] > g or img[yc][xc][2] > r):
+					cont = False 
+					array = findspot(False)
+		if cont == True:
+			cv2.rectangle(img, (x,y),(x+size,y+size),(255,255,0),3)
+			return [y,x]
+ar = findspot(satisfied)
 """
 for y in range(len(img)):
         for x in range(len(img[0])):
@@ -57,37 +117,17 @@ for y in range(len(img)):
 			img[y][x][1] =0
 			img[y][x][2] =0
 """
-#cv2.imshow("imageedit", img)
+cv2.imshow("imageedit", img)
 
-img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-maxcoordx = 0
-currentx = 255
-currenty = 255
-maxcoordy =0
-for y in range(len(img)):
-	average = 0;
-	for x in range(len(img[0])):
-		average += img[y][x]
-	#print average
-	average=float(average)/float(len(img[0]))
-	#print average
-	if average < currenty:
-		currenty = average
-		maxcoordy = y
-
-for x in range(len(img[0])):
-        average = 0;
-        for y in range(len(img)):
-                average += img[y][x]
-        average=float(average)/float(len(img[0]))
-        if average < currentx:
-                currentx = average
-		maxcoordx = x
-print(maxcoordx,maxcoordy)
-
-cv2.circle(img,(maxcoordx,maxcoordy),10,(0,0,255),-1)
-cv2.imshow("center",img)
-
+#img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+#maxcoordx = 0
+#currentx = 255
+#currenty = 255
+#maxcoordy =0
+#for y in range(len(img)):
+#	average = 0;
+#	for x in range(len(img[0])):
+		
 #cv2.imshow("nohair-el", closing)
 #cv2.imshow("thresh", slices)
 cv2.waitKey(0)
