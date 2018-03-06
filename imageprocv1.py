@@ -1,6 +1,6 @@
-import random
+#import random
 import numpy as np
-import cv2, sys, math, codecs, time, copy, imutils
+import cv2, math, copy, imutils
 
 #from matplotlib import pyplot as plt
 
@@ -50,7 +50,7 @@ pix = len(img)*len(img[0])
 r = r/(len(img)*len(img[0])*1.0)
 g = g/(len(img)*len(img[0])*1.0)
 b = b/(len(img)*len(img[0])*1.0)
-print(b,g,r)
+#print(b,g,r)
 size = 10
 if(pix < 240 * 240/9*16):
 	size = 4
@@ -193,7 +193,7 @@ angle = angle/180*3.14
 #x = int(x)
 #y = int(y)
 #cv2.ellipse(img, (x,y),(MA,ma),angle)
-print angle
+#print angle
 tupleEnd = (int(round(x+MA*math.cos(angle)/2)),int(round(y-MA*math.sin(angle)/2)))
 tupleStart = (int(round(x-MA*math.cos(angle)/2)),int(round(y+MA*math.sin(angle)/2)))
 m = round(math.sin(angle)/math.cos(angle))
@@ -223,9 +223,9 @@ cv2.drawContours(asym, ctr, -1, (0,0,0), 2)
 mask = np.zeros(mask.shape[:2], np.uint8)
 
 cv2.floodFill(asym,mask,(maxcoordx,maxcoordy),(0,0,0))
-print cv2.arcLength(ctr,True)
-print cv2.contourArea(ctr)
-
+perim= cv2.arcLength(ctr,True)
+area = cv2.contourArea(ctr)
+irreg=float(perim)*perim/4/math.pi/area
 
 #M = cv2.getRotationMatrix2D((len(img[0]),len(img)),origangle,1)
 #dst = cv2.warpAffine(asym,M,(len(img[0]),len(img)))
@@ -263,7 +263,7 @@ for x in range(len(contours)):
 	if(cv2.contourArea(contours[x])>max and cv2.contourArea(contours[x])<len(graydst[0])*len(graydst[0])*0.9):
 		max = (cv2.contourArea(contours[x]))
 		index = x
-print index
+#print index
 #print contours
 #cv2.fitEllipse(contours[0]) 
 #max1 = 
@@ -279,7 +279,7 @@ tupleStartDst = (int(round(xDst-MADst*math.cos(angleDst)/2)),int(round(yDst+MADs
 topmost = tuple(contours[index][contours[index][:,:,1].argmin()][0])
 bottommost = tuple(contours[index][contours[index][:,:,1].argmax()][0])
 yavg = (bottommost[1]+topmost[1])/2
-#cv2.line(graydst, tupleStartDst,tupleEndDst,(255,255,255))
+cv2.line(graydst, (0,yavg),(len(graydst[0]),yavg),(255,255,255))
 #print cv2.contourArea(contours[0])
 #cv2.drawContours(graydst, contours, 2, (0,255,0), 3)
 currentArea = cv2.contourArea(contours[index])
@@ -293,7 +293,7 @@ bottom[:,:,:] = (255,255,255)
 comb = np.zeros((len(dst),len(dst[0]),3), np.uint8)
 comb[:,:,:] = (255,255,255)
 
-print asym[0][0]
+#print asym[0][0]
 for y in range(len(graydst)):
 	for x in range(len(graydst[0])):
 		if(y<yavg):
@@ -320,6 +320,8 @@ while(bottom[topmost[1]][x][0]>0):
 	x = x-1
 topLeftBot = [x,topmost[1]]
 
+#M = np.float32([[1,0,-topLeftBot[0]+200],[0,1,-topLeftBot[1]]])
+#bottom = cv2.warpAffine(bottom,M,(len(bottom[0]),len(bottom)))
 
 top = cv2.cvtColor(top,cv2.COLOR_BGR2GRAY)
 ret,thresh = cv2.threshold(top,127,255,cv2.THRESH_BINARY_INV)
@@ -337,11 +339,63 @@ while(top[topmost[1]][x][0]>0):
         x = x-1
 topLeftTop = [x,topmost[1]]
 
+
+
+M = np.float32([[1,0,-100],[0,1,-topLeftBot[1]+5]])
+bottom = cv2.warpAffine(bottom,M,(len(bottom[0]),len(bottom)))
+
+M = np.float32([[1,0,-100],[0,1,-topLeftTop[1]+5]])
+top = cv2.warpAffine(top,M,(len(bottom[0]),len(bottom)))
+
+comb = copy.deepcopy(top)
+for y in range(len(comb)):
+        for x in range(len(comb[0])):
+		if(bottom[y][x][0] != 0 and comb[y][x][0] != 0):
+			comb[y][x][1] = 0
+		if(bottom[y][x][0] != 0 and comb[y][x][0] == 0):
+			comb[y][x][0] =255
+		if(bottom[y][x][0] == 0 and comb[y][x][0] != 0):
+			comb[y][x][1] = 0
+			comb[y][x][0] = 0
+finalArea=copy.deepcopy(comb)
+for y in range(len(finalArea)):
+        for x in range(len(finalArea[0])):
+		if(finalArea[y][x][0] == 0 and finalArea[y][x][2] == 255 ):
+			finalArea[y][x][2]=0
+			
+		if(finalArea[y][x][0] == 255 and finalArea[y][x][2] == 0 ):
+			finalArea[y][x][0]=0
+		if(finalArea[y][x][0] == 255 and finalArea[y][x][2] == 255 ):
+                        finalArea[y][x][1]=255
+
+finalArea = cv2.cvtColor(finalArea,cv2.COLOR_BGR2GRAY)
+ret,thresh = cv2.threshold(finalArea,127,255,cv2.THRESH_BINARY)
+finalArea, contours, hierarchy = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
+finalArea = cv2.cvtColor(finalArea,cv2.COLOR_GRAY2BGR)
+max = 0
+index=0
+for x in range(len(contours)):
+        if(cv2.contourArea(contours[x])>max and cv2.contourArea(contours[x])<len(graydst[0])*len(graydst[0])*0.9):
+                max = (cv2.contourArea(contours[x]))
+                index = x
+x = index
+
+symArea = cv2.contourArea(contours[index])
+final=float(symArea)/currentArea*100
+print("Border Irregularity: ")
+print(irreg)
+print("symmetry: ")
+print(final)
+
+cv2.line(asym, tupleStart,tupleEnd,(255,255,255))
+
+
+cv2.imshow("comb",comb)
 cv2.imshow("top",top)
 cv2.imshow("bot",bottom)
 cv2.imshow("ctr",asym)
 cv2.imshow("cont", graydst)
-
+cv2.imshow("final", finalArea)
 #img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 #maxcoordx = 0
 #currentx = 255
