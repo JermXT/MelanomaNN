@@ -19,8 +19,8 @@ np.array([[0, 0, 1, 0, 0],
 # kernel for closing
 
 
-#img = cv2.imread("Images/detailed.png")
-img = cv2.imread("Images/ISIC_0000016.png")
+img = cv2.imread("Images/detailed.png")
+#img = cv2.imread("Images/ISIC_0000016.png")
 #cv2.imshow("original",img)
 
 closing = cv2.morphologyEx(img, cv2.MORPH_CLOSE, ellipse)
