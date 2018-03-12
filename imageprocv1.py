@@ -18,8 +18,10 @@ np.array([[0, 0, 1, 0, 0],
           [0, 0, 1, 0, 0]], dtype=np.uint8)
 # kernel for closing
 
-
-img = cv2.imread("Images/detailed.png")
+img = cv2.imread("Images/ISIC_0000020.jpg")
+#img = cv2.imread("Images/ISIC_0000019.jpg")
+#img = cv2.imread("Images/ISIC_0000001.jpg")
+#img = cv2.imread("Images/detailed.png")
 #img = cv2.imread("Images/ISIC_0000016.png")
 #cv2.imshow("original",img)
 
@@ -47,10 +49,10 @@ for y in range(len(img)):
 		g+=img[y][x][1]
 		r+=img[y][x][2]
 pix = len(img)*len(img[0])
-r = r/(len(img)*len(img[0])*1.0)
-g = g/(len(img)*len(img[0])*1.0)
-b = b/(len(img)*len(img[0])*1.0)
-#print(b,g,r)
+r = r/(len(img)*len(img[0])*1.2)
+g = g/(len(img)*len(img[0])*1.2)
+b = b/(len(img)*len(img[0])*1.2)
+print(b,g,r)
 size = 10
 if(pix < 240 * 240/9*16):
 	size = 4
@@ -65,9 +67,9 @@ maxcoordx = 0
 currentx = 255
 currenty = 255
 maxcoordy =0
-for y in range(len(img)):
+for y in range(5,len(img)-5):
 	average = 0;
-	for x in range(len(img[0])):
+	for x in range(5,len(img[0])-5):
 		average += imgbw[y][x]
 		#print average
 		average=float(average)/float(len(img[0]))
@@ -76,15 +78,15 @@ for y in range(len(img)):
 			currenty = average
 			maxcoordy = y
 
-for x in range(len(img[0])):
+for x in range(5,len(img[0]-5)):
         average = 0;
-        for y in range(len(img)):
+        for y in range(5,len(img)-5):
                 average += imgbw[y][x]
         average=float(average)/float(len(img[0]))
         if average < currentx:
                 currentx = average
 		maxcoordx = x
-#print(maxcoordx,maxcoordy)
+print(maxcoordx,maxcoordy)
 run = True
 current = maxcoordx
 newImg=copy.deepcopy(img)
@@ -186,7 +188,10 @@ for y in range(len(img)):
 			img[y][x][2] =0
 """
 
-#cv2.imshow("imageedit", newImg)
+cv2.imshow("imageedit", newImg)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
 (x,y),(MA,ma),angle = cv2.fitEllipse(ctr)
 origangle=angle
 angle = angle/180*3.14
@@ -310,11 +315,16 @@ bottom, contours, hierarchy = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_AP
 bottom = cv2.cvtColor(bottom,cv2.COLOR_GRAY2BGR)
 max = 0
 index=0
+
 for x in range(len(contours)):
         if(cv2.contourArea(contours[x])>max and cv2.contourArea(contours[x])<len(graydst[0])*len(graydst[0])*0.9):
                 max = (cv2.contourArea(contours[x]))
                 index = x
-topmost = tuple(contours[index][contours[index][:,:,1].argmin()][0])
+
+one = contours[index]
+two = one[contours[index][:,:,1].argmin()]
+topmost = tuple(two[0])
+#topmost = tuple(contours[index][contours[index][:,:,1].argmin()][0])
 x = index
 while(bottom[topmost[1]][x][0]>0):
 	x = x-1
