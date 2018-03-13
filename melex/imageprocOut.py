@@ -160,7 +160,7 @@ def run(filename,const):
 	
 	#if(len(ctr)<100):
 	#	run(filename, const+0.1)
-
+	
 	(x,y),(MA,ma),angle = cv2.fitEllipse(ctr)
 	origangle=angle
 	angle = angle/180*3.14

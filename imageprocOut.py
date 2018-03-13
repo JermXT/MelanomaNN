@@ -158,11 +158,12 @@ def run(filename,const):
 
 	#cv2.imshow("imageedit", newImg)
 	
-	#if(len(ctr)<100):
-	#	run(filename, const+0.1)
-
-	(x,y),(MA,ma),angle = cv2.fitEllipse(ctr)
-	origangle=angle
+	
+        try:
+	        (x,y),(MA,ma),angle = cv2.fitEllipse(ctr)
+        except:
+                return False
+        origangle=angle
 	angle = angle/180*3.14
 	#x = int(x)
 	#y = int(y)
