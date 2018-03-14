@@ -1,13 +1,20 @@
-import nnOutput, impageprocOut, sys
-total = len(sys.argv)
+import imageprocOut, sys
+import nnOutput
+total = sys.argv
 def run(total):
-    if(total > 1):
+    print total
+    if(len(total) > 2):
         print "too many args"
         return
     const = 0.9
-    answer = imageprocOut.run(total[0],const)
+    answer = imageprocOut.run(total[1],const)
     while(answer == False):
         const = const+0.1
-        answer = impageprocOut.run(total[0],const)
-    print nnOutput.run(answer)
-    
+        answer = impageprocOut.run(total[1],const)
+    #print answer
+    final = nnOutput.run([answer])
+    if(final >=100):
+        return True
+    else:
+        return False
+run(total)
