@@ -5,6 +5,9 @@ def run(total):
         print "too many args"
         return
     const = 0.9
-    answer = False
-    while(imageprocout)
-    impageprocout
+    answer = imageprocOut.run(total[0],const)
+    while(answer == False):
+        const = const+0.1
+        answer = impageprocOut.run(total[0],const)
+    print nnOutput.run(answer)
+    
