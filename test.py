@@ -12,7 +12,7 @@ def run(total):
         const = const+0.1
         answer = impageprocOut.run(total[1],const)
     #print answer
-    final = nnOutput.run([answer])
+    final[0][0] = nnOutput.run([answer])
     if(final >=100):
         return True
     else:
