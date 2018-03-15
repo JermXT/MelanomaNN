@@ -374,6 +374,7 @@ def run(filename,const):
 	cv2.imwrite(path+time+"-finalArea.png",finalArea)
 
 	return [irreg,final]
+	#print [irreg,final]
 	#print("symmetry: ")
 #run("Images/ISIC_0000016.png",1.0)
 
