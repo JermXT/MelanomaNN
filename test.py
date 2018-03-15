@@ -19,4 +19,4 @@ def run(total):
         return True
     else:
         return False
-run("Images/ISIC_0000016.png")
+#run("Images/ISIC_0000016.png")
