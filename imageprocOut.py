@@ -1,6 +1,6 @@
 #import random
 import numpy as np
-import cv2, math, copy, imutils, os
+import cv2, math, copy, imutils, os, datetime
 
 #from matplotlib import pyplot as plt
 def run(filename,const):
@@ -177,7 +177,7 @@ def run(filename,const):
 	xcenter =x
 	ycenter = y
 	cv2.line(img, tupleStart,tupleEnd,(255,255,255))
-	cv2.line(newImg, tupleStart,tupleEnd,(255,255,255))
+	#cv2.line(newImg, tupleStart,tupleEnd,(255,255,255))
 	#cv2.imshow("imageedit", newImg)
 	#image at this point has contour and major axis
 	def retxy(x,y,m,b):
@@ -359,9 +359,23 @@ def run(filename,const):
 	final=float(symArea)/currentArea*100
 	#cv2.imwrite(os.path.join(os.path.expanduser('~'),"ScienceFair2018","examples","symmetry",filename+"sym.jpg"),finalArea)
 	#print("Border Irregularity: ")
+	filename = filename.split("/")
+	path = ""
+	for x in range(len(filename)-1):
+		path =  path +filename[x]+"/"
+	now = datetime.datetime.now()
+	time = now.strftime("%Y-%m-%d at %H.%M.%S")
+	cv2.line(asym, tupleStart,tupleEnd,(255,255,255))
+	cv2.imwrite(path+time+"-border.png", newImg)    
+	cv2.imwrite(path+time+"-overlap.png",comb)
+	#cv2.imwrite(path+"cont.png",graydst)
+        
+	cv2.imwrite(path+time+"-majoraxis.png",asym)
+	cv2.imwrite(path+time+"-finalArea.png",finalArea)
+
 	return [irreg,final]
 	#print("symmetry: ")
-
+#run("Images/ISIC_0000016.png",1.0)
 
 #cv2.line(asym, tupleStart,tupleEnd,(255,255,255))
 
@@ -372,6 +386,7 @@ def run(filename,const):
 #cv2.imshow("ctr",asym)
 #cv2.imshow("cont", graydst)
 #cv2.imshow("final", finalArea)
+
 #img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 #maxcoordx = 0
 #currentx = 255
