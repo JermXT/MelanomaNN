@@ -3,9 +3,9 @@ import nnOutput
 #total = sys.argv
 def run(total):
     #print total
-    if(len(total) > 2):
-        print "too many args"
-        return
+    #if(len(total) > 2):
+    #    print "too many args"
+    #    return
     const = 0.9
     answer = imageprocOut.run(total,const)
     while(answer == False):
