@@ -1,9 +1,16 @@
 #import random
 import numpy as np
-import cv2, math, copy, imutils, os, datetime
+import cv2, math, copy, imutils, os, datetime, time
+
 
 #from matplotlib import pyplot as plt
+
 def run(filename,const):
+	global time
+	#start = time.clock()
+	#prev = time.time()
+	#print time.time(), "begin"
+	
 	kernel = np.ones((2,2),np.uint8)
 	# kernel to dialate thresh
 	r=0
@@ -47,10 +54,10 @@ def run(filename,const):
 			g+=img[y][x][1]
 			r+=img[y][x][2]
 	pix = len(img)*len(img[0])
-	r = r/(len(img)*len(img[0])*const)
-	g = g/(len(img)*len(img[0])*const)
-	b = b/(len(img)*len(img[0])*const)
-	#print(b,g,r)
+	r = r/(len(img)*len(img[0]))*const
+	g = g/(len(img)*len(img[0]))*const
+	b = b/(len(img)*len(img[0]))*const
+	print(b,g,r)
 	size = 10
 	if(pix < 240 * 240/9*16):
 		size = 4
@@ -85,10 +92,36 @@ def run(filename,const):
                 	currentx = average
 			maxcoordx = x
 	#print(maxcoordx,maxcoordy)
+
+	#print time.time(), "image intensity"
+
 	run = True
 	current = maxcoordx
 	newImg=copy.deepcopy(img)
+	best=0
+	max = 0
+	while(int(img[maxcoordy][current][0])+int(img[maxcoordy][current][1])+int(img[maxcoordy][current][2])< 1.0*(g+b+r) and current >15):
+		#print(int(img[maxcoordy][current][0])+int(img[maxcoordy][current][1])+int(img[maxcoordy][current][2]))
+		slope = int(img[maxcoordy][current][0])+int(img[maxcoordy][current][1])+int(img[maxcoordy][current][2])
+                slopeP = int(img[maxcoordy][current+1][0])+int(img[maxcoordy][current+1][1])+int(img[maxcoordy][current+1][2])
+                #print slope, 0.8*(g+b+r),1.2*(g+b+r),abs(slope-slopeP)
+                if(0.95*(g+b+r)<=slope and slope<1.2*(g+b+r) and abs(slope-slopeP) > max):
+                        max = abs(slope-slopeP)
+                        position = [maxcoordy,current+1]
+			best = current
+		current = current - 1
+	current = best
+	#print best
+	r,g,b= img[position[0]][position[1]]
+	
+	current = maxcoordx
 	while(True):
+		#slope = img[maxcoordy][current][0]+img[maxcoordy][current][1]+img[maxcoordy][current][2] 
+		#slopeP = img[maxcoordy][current+1][0]+img[maxcoordy][current+1][1]+img[maxcoordy][current+1][2]
+                #print slope, 0.8*(g+b+r),1.2*(g+b+r),abs(slope-slopeP)
+		#if(0.8*(g+b+r)<slope and slope<1.2*(g+b+r) and abs(slope-slopeP) > max):
+			#max = abs(slope-slopeP)
+			#position = [maxcoordy,current+1]
 		if(img[maxcoordy][current][0]<=b and img[maxcoordy][current][1]<=g and img[maxcoordy][current][2]<=r):
 			newImg[maxcoordy][current][0] =0
 		elif(img[maxcoordy+1][current][0]<=b and img[maxcoordy+1][current][1]<=g and img[maxcoordy+1][current][2]<=r):
@@ -101,17 +134,22 @@ def run(filename,const):
 		#if current ==0 :
 		#	break
 		current = current - 1
+	
+	#print(r,g,b)
 	i = 1000000
 	prev = [1,0]
 	coords = [current, maxcoordy]
+	#coords = [position[0],position[1]]
 	#print coords
 	#[[-1,0],[-1,1],[0,1],[1,1],[1,0],[1,-1],[0,-1],[-1,-1]]
 	order = [[-1,0],[-1,-1],[0,-1],[1,-1],[1,0],[1,1],[0,1],[-1,1]]
 	#visited1 =[coords]
 	#visited2 = []
 	contour =[[current, maxcoordy]]
+	#contour = [position[0],position[1]]
 	approx = 15
 	exit = False
+
 	while(i>=0):
 		index = order.index(prev)
 		for x in range((index+1), (index+9)):
@@ -149,7 +187,12 @@ def run(filename,const):
 		approx = approx-1
 		if(exit == True):
 			break
-	#print len(contour)
+	
+	#print(time.time(), "border")
+	#cv2.imshow("imageedit", newImg)
+        #cv2.waitKey(0)
+        #cv2.destroyAllWindows()
+        #print len(contour)
 	ctr = np.array(contour).reshape((-1,1,2)).astype(np.int32)
 	cv2.drawContours(img,[ctr],0,(255,255,255),1)
 	#print coords
@@ -158,8 +201,14 @@ def run(filename,const):
 
 	#cv2.imshow("imageedit", newImg)
 	
-	
-        try:
+
+	if(cv2.contourArea(ctr)<(len(img[0]))*(len(img))*0.03 or cv2.contourArea(ctr)>len(img[0])*len(img)*0.75):
+		#print cv2.contourArea(ctr)
+		#print (len(img[0])+1)*(len(img)+1)
+		#print(cv2.contourArea(ctr)<len(img[0])*len(img)*0.05)
+		#print(cv2.contourArea(ctr)>len(img[0])*len(img)*0.75)
+		return False
+	try:
 	        (x,y),(MA,ma),angle = cv2.fitEllipse(ctr)
         except:
                 return False
@@ -177,8 +226,12 @@ def run(filename,const):
 	xcenter =x
 	ycenter = y
 	cv2.line(img, tupleStart,tupleEnd,(255,255,255))
-	#cv2.line(newImg, tupleStart,tupleEnd,(255,255,255))
+	
+	cv2.line(newImg, tupleStart,tupleEnd,(255,255,255))
 	#cv2.imshow("imageedit", newImg)
+	#cv2.waitKey(0)
+        #cv2.destroyAllWindows()  
+	
 	#image at this point has contour and major axis
 	def retxy(x,y,m,b):
 		if(y<x*m+b):
@@ -216,6 +269,8 @@ def run(filename,const):
 	cv2.floodFill(dst,maskRotate,(len(dst[0])-1,0),(255,255,255))
 	cv2.floodFill(dst,maskRotate,(len(dst[0])-1,len(dst)-1),(255,255,255))
 
+	#print(time.time(), "fillstart")
+
 	for y in range(len(dst)):
         	for x in range(len(dst[0])):
 			remove = True
@@ -228,7 +283,7 @@ def run(filename,const):
 				dst[y][x][0] = 255
 				dst[y][x][1] = 255
 				dst[y][x][2] = 255
-
+	#print(time.time(), "fillend")
 	graydst = cv2.cvtColor(dst,cv2.COLOR_BGR2GRAY)
 	ret,thresh = cv2.threshold(graydst,127,255,cv2.THRESH_BINARY)
 	graydst, contours, hierarchy = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
@@ -354,8 +409,10 @@ def run(filename,const):
                 	max = (cv2.contourArea(contours[x]))
                 	index = x
 	x = index
+	
+	#print(time.time(), "symarea")
 
-	symArea = cv2.contourArea(contours[index])
+	symArea = cv2.contourArea(contours[x])
 	final=float(symArea)/currentArea*100
 	#cv2.imwrite(os.path.join(os.path.expanduser('~'),"ScienceFair2018","examples","symmetry",filename+"sym.jpg"),finalArea)
 	#print("Border Irregularity: ")
@@ -372,12 +429,13 @@ def run(filename,const):
         
 	cv2.imwrite(path+time+"-majoraxis.png",asym)
 	cv2.imwrite(path+time+"-finalArea.png",finalArea)
-
+	#print time.time(), "end"
 	return [irreg,final]
 	#print [irreg,final]
 	#print("symmetry: ")
-#run("Images/ISIC_0000016.png",1.0)
 
+run("Images/ISIC_0000117.jpg",1.0)
+#print time.time(), "end"
 #cv2.line(asym, tupleStart,tupleEnd,(255,255,255))
 
 
